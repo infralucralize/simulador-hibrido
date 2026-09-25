@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador Regime Híbrido — Lucralize Contabilidade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E1428;
+    --navy-80:#1C2438;
+    --teal:#0C7488;
+    --teal-light:#91DBE4;
+    --teal-tint:#EAF6F8;
+    --red:#F62642;
+    --red-tint:#FDE9EC;
+    --bg:#F5F7F8;
+    --card:#FFFFFF;
+    --ink:#16202B;
+    --ink-soft:#5A6472;
+    --line:#E1E7EA;
+    --ok:#1E8E5A;
+    --ok-tint:#E6F4EC;
+    --warn:#C97A00;
+    --warn-tint:#FBF1DE;
+    --radius:14px;
+    --font-title:'Comfortaa', sans-serif;
+    --font-body:'Poppins', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--teal);}
+
+  /* ---------- topo / marca ---------- */
+  header.brand{
+    background:var(--navy); color:#fff;
+    padding:18px 28px;
+    display:flex; align-items:center; gap:10px;
+    border-bottom:4px solid var(--red);
+  }
+  header.brand .logo-img{ height:34px; width:auto; display:block; }
+  header.brand .sub{ font-family:var(--font-title); font-size:12px; color:#C9D6DC; align-self:flex-end; margin-bottom:2px; }
+  header.brand .spacer{flex:1;}
+  header.brand .tag{ font-size:12.5px; color:#AFC1CA; }
+
+  main{ max-width:1180px; margin:0 auto; padding:28px 20px 80px; }
+
+  .hero{ margin-bottom:26px; }
+  .hero h1{
+    font-family:var(--font-title); font-weight:700; font-size:clamp(24px,3.4vw,34px);
+    color:var(--navy); margin:0 0 8px; line-height:1.15; max-width:22ch;
+  }
+  .hero p{ color:var(--ink-soft); max-width:62ch; margin:0; }
+
+  /* ---------- stepper ---------- */
+  .steps{
+    display:flex; gap:6px; margin:26px 0 22px; flex-wrap:wrap;
+  }
+  .step-pill{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--ink-soft); padding:6px 12px 6px 6px;
+    border-radius:999px; background:#fff; border:1px solid var(--line);
+  }
+  .step-pill .n{
+    width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+    background:var(--line); color:#fff; font-size:12px; font-weight:600;
+  }
+  .step-pill.active{ border-color:var(--teal); color:var(--navy); font-weight:600; }
+  .step-pill.active .n{ background:var(--teal); }
+  .step-pill.done .n{ background:var(--ok); }
+  .step-pill.done{ color:var(--ok); }
+
+  /* ---------- layout grid ---------- */
+  .layout{ display:grid; grid-template-columns:1fr 320px; gap:22px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } .summary{ position:static !important; } }
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 28px;
+  }
+  .card h2{ font-family:var(--font-title); font-size:19px; color:var(--navy); margin:0 0 4px; }
+  .card > p.lede{ color:var(--ink-soft); margin:0 0 22px; max-width:60ch; font-size:13.5px;}
+
+  .field{ margin-bottom:18px; }
+  .field label{ display:block; font-size:13.5px; font-weight:600; color:var(--navy); margin-bottom:6px; }
+  .field .hint{ font-size:12.5px; color:var(--ink-soft); margin-top:5px; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:560px){ .row2{ grid-template-columns:1fr; } }
+
+  select, input[type=text], input[type=number]{
+    width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:9px;
+    font-family:var(--font-body); font-size:14.5px; color:var(--ink); background:#fff;
+  }
+  select:focus, input:focus{ outline:none; border-color:var(--teal); }
+  input[disabled], select[disabled]{ background:#F1F3F4; color:#9AA3AB; }
+
+  .checkrow{
+    display:flex; align-items:center; gap:10px; padding:9px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .checkrow:last-child{ border-bottom:none; }
+  .checkrow label{ flex:1; font-size:13.5px; font-weight:500; color:var(--ink); margin:0; }
+  .checkrow input[type=checkbox]{ width:17px; height:17px; accent-color:var(--teal); }
+  .checkrow .pct{ width:84px; }
+  .checkrow .pct input{ padding:8px 9px; text-align:right; }
+  .checkrow .tag{ font-size:11px; color:var(--teal); background:var(--teal-tint); padding:2px 7px; border-radius:6px; white-space:nowrap; }
+
+  .note-box{
+    background:var(--teal-tint); border:1px solid #CDE9EC; border-radius:10px;
+    padding:13px 15px; font-size:13px; color:var(--navy-80); margin:16px 0;
+  }
+  .note-box.warn{ background:var(--warn-tint); border-color:#F0DBA8; color:#5C4300; }
+  .note-box b{ color:var(--navy); }
+
+  .btnrow{ display:flex; justify-content:space-between; margin-top:26px; gap:10px; }
+  button{ font-family:var(--font-body); cursor:pointer; border:none; }
+  .btn-primary{
+    background:var(--teal); color:#fff; padding:12px 22px; border-radius:9px;
+    font-weight:600; font-size:14.5px;
+  }
+  .btn-primary:hover{ background:#0a5f70; }
+  .btn-ghost{
+    background:transparent; color:var(--navy); padding:12px 18px; border-radius:9px;
+    font-weight:600; font-size:14.5px; border:1.5px solid var(--line);
+  }
+  .btn-ghost:hover{ border-color:var(--navy); }
+
+  /* ---------- resumo lateral ---------- */
+  .summary{
+    background:var(--navy); color:#fff; border-radius:var(--radius);
+    padding:22px 22px; position:sticky; top:20px;
+  }
+  .summary h3{ font-family:var(--font-title); font-size:14px; margin:0 0 14px; color:var(--teal-light); }
+  .summary .item{
+    display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.09);
+    font-size:13.5px;
+  }
+  .summary .item span:first-child{ color:#B9C4CC; }
+  .summary .item span:last-child{ font-weight:600; text-align:right; }
+  .summary .cta{
+    margin-top:16px; background:rgba(145,219,228,.12); border:1px dashed rgba(145,219,228,.5);
+    border-radius:9px; padding:12px; font-size:12.5px; color:var(--teal-light); text-align:center;
+  }
+
+  /* ---------- resultado ---------- */
+  .result-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:18px 0 8px; }
+  @media (max-width:760px){ .result-grid{ grid-template-columns:1fr; } }
+  .result-card{ border-radius:var(--radius); padding:22px; border:2px solid var(--line); position:relative; }
+  .result-card.winner{ border-color:var(--ok); background:var(--ok-tint); }
+  .result-card .flag{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700;
+    color:var(--ok); background:#fff; padding:4px 10px; border-radius:999px; margin-bottom:10px;
+  }
+  .result-card h4{ font-family:var(--font-title); font-size:16px; margin:0 0 4px; color:var(--navy); }
+  .result-card .big{ font-family:var(--font-title); font-size:30px; font-weight:700; color:var(--navy); margin:6px 0 2px; }
+  .result-card .sub{ font-size:12.5px; color:var(--ink-soft); margin-bottom:14px; }
+  .breakdown{ font-size:13px; }
+  .breakdown .ln{ display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--line); }
+  .breakdown .ln:last-child{ border-bottom:none; font-weight:700; }
+  .breakdown .ln em{ font-style:normal; color:var(--ink-soft); font-size:11.5px; display:block; }
+
+  .verdict{
+    margin-top:18px; padding:16px 18px; border-radius:12px; background:#fff; border:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .verdict b{ color:var(--navy); }
+
+  /* ---------- resultado simples (visão padrão) ---------- */
+  .simple-hero{
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-80) 100%);
+    color:#fff; border-radius:16px; padding:28px 26px; margin-bottom:22px;
+  }
+  .simple-hero .kicker{ font-size:12.5px; color:var(--teal-light); font-weight:600; margin-bottom:6px; }
+  .simple-hero h2{ font-family:var(--font-title); font-size:24px; margin:0 0 10px; line-height:1.25; color:#fff; }
+  .simple-hero p{ font-size:14.5px; color:#D9E3E8; margin:0; max-width:64ch; }
+  .simple-hero p b{ color:#fff; }
+
+  .simple-rows{ display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .simple-row{
+    display:flex; align-items:center; gap:16px; background:#fff; border:1.5px solid var(--line);
+    border-radius:12px; padding:16px 18px;
+  }
+  .simple-row.best{ border-color:var(--ok); background:var(--ok-tint); }
+  .simple-row.worst{ border-color:var(--red); background:var(--red-tint); }
+  .simple-row .tag-icon{ font-size:22px; width:32px; text-align:center; flex-shrink:0; }
+  .simple-row .body{ flex:1; }
+  .simple-row .title{ font-weight:600; color:var(--navy); font-size:14.5px; }
+  .simple-row .caption{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .simple-row .value{ font-family:var(--font-title); font-size:20px; font-weight:700; color:var(--navy); white-space:nowrap; }
+  .simple-row .value .per{ font-size:11px; font-weight:400; color:var(--ink-soft); display:block; text-align:right; white-space:normal; }
+
+  .action-callout{
+    background:var(--teal-tint); border:1.5px solid var(--teal); border-radius:12px;
+    padding:16px 18px; font-size:13.5px; color:var(--navy-80); margin-bottom:20px;
+  }
+  .action-callout b{ color:var(--navy); }
+
+  .details-toggle{
+    display:flex; align-items:center; gap:8px; background:none; border:none; color:var(--teal);
+    font-weight:600; font-size:13.5px; padding:8px 0; cursor:pointer;
+  }
+  .details-toggle .arrow{ transition:transform .2s; display:inline-block; }
+  .details-toggle.open .arrow{ transform:rotate(180deg); }
+  .details-section{ display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); }
+  .details-section.open{ display:block; }
+
+  table.memoria{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:10px; }
+  table.memoria th{ background:var(--navy); color:#fff; text-align:left; padding:8px 10px; font-weight:600; }
+  table.memoria td{ padding:7px 10px; border-bottom:1px solid var(--line); }
+  table.memoria tr:last-child td{ font-weight:700; border-top:2px solid var(--navy); }
+
+  .assumptions{ font-size:12px; color:var(--ink-soft); }
+  .assumptions li{ margin-bottom:6px; }
+  .badge-pend{
+    display:inline-block; font-size:10.5px; font-weight:700; color:var(--warn);
+    background:var(--warn-tint); border-radius:5px; padding:1px 6px; margin-left:6px; vertical-align:middle;
+  }
+
+  footer{ text-align:center; color:var(--ink-soft); font-size:12px; padding:30px 0 10px; }
+
+  .step-panel{ display:none; }
+  .step-panel.active{ display:block; }
+
+  .inputpct{ position:relative; max-width:220px; }
+  .inputpct input{ padding-right:34px; }
+  .inputpct .suffix{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); font-size:14px; pointer-events:none;
+  }
+  .disabled-opt{ color:#B7BEC4; }
+</style>
+</head>
+<body>
+
+<header class="brand">
+  <img class="logo-img" src="data:image/png;base64,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" alt="Lucralize">
+  <span class="spacer"></span>
+  <span class="tag">Simulador Regime Híbrido do IBS/CBS</span>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Simples puro ou híbrido em 2027? Veja o impacto real antes de decidir.</h1>
+    <p>Simulação para optantes do Simples Nacional (Anexo III). Compara o que você paga hoje com o que passaria a pagar
+    apurando o IBS/CBS por fora do DAS — com o crédito das suas compras já descontado.</p>
+  </div>
+
+  <div class="steps" id="steps">
+    <div class="step-pill active" data-step="0"><span class="n">1</span>Perfil</div>
+    <div class="step-pill" data-step="1"><span class="n">2</span>Seu negócio</div>
+    <div class="step-pill" data-step="2"><span class="n">3</span>Suas compras</div>
+    <div class="step-pill" data-step="3"><span class="n">4</span>Suas vendas</div>
+    <div class="step-pill" data-step="4"><span class="n">5</span>Resultado</div>
+  </div>
+
+  <div class="layout">
+    <div>
+
+      <!-- STEP 0 -->
+      <div class="step-panel active" data-panel="0">
+        <div class="card">
+          <h2>Perfil da empresa</h2>
+          <p class="lede">Hoje o simulador cobre optantes do Simples Nacional, Anexos III e V (serviços). Outros anexos e o MEI/Lucro Presumido entram em versões futuras. A escolha entre III e V é manual — veja o Fator R abaixo.</p>
+
+          <div class="row2">
+            <div class="field">
+              <label>Regime tributário atual</label>
+              <select id="regime">
+                <option value="simples">Simples Nacional — pago o DAS todo mês</option>
+                <option value="outro" class="disabled-opt">Lucro Presumido / Real (em breve)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Porte</label>
+              <select id="porte">
+                <option value="ME">ME — Microempresa</option>
+                <option value="EPP">EPP — Empresa de Pequeno Porte</option>
+              </select>
+              <div class="hint">MEI segue regra própria (DAS fixo) e não faz parte desta simulação.</div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Anexo do Simples</label>
+              <select id="anexo">
+                <option value="III">Anexo III — Serviços em geral</option>
+                <option value="V">Anexo V — Serviços profissionais (Fator R)</option>
+              </select>
+              <div class="hint">Definido pela atividade (CNAE) e, para serviços, pelo Fator R (folha ÷ receita). Confirme com seu contador se não tiver certeza.</div>
+            </div>
+            <div class="field">
+              <label>Ano de referência da decisão</label>
+              <select id="ano">
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+                <option value="2031">2031</option>
+                <option value="2032">2032</option>
+                <option value="2033">2033</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="note-box warn">
+            <b>Janela de opção:</b> a escolha pelo regime híbrido é feita por semestre, em <b>setembro</b> (para jan-jun) ou
+            <b>março</b> (para jul-dez), e é irretratável no período (LC 123/2006, art. 18, §§9º-11).
+          </div>
+
+          <div class="btnrow"><span></span><button class="btn-primary" onclick="Wizard.next()">Continuar →</button></div>
+        </div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="step-panel" data-panel="1">
+        <div class="card">
+          <h2>Seu negócio</h2>
+          <p class="lede">A alíquota do Simples depende do faturamento acumulado nos últimos 12 meses (RBT12).</p>
+
+          <div class="row2">
+            <div class="field">
+              <label>Faturamento bruto mensal (R$)</label>
+              <input type="number" id="faturamentoMensal" value="12000" min="0" step="100">
+              <div class="hint">Receita bruta do mês — sem deduzir custos.</div>
+            </div>
+            <div class="field">
+              <label>RBT12 — receita dos últimos 12 meses (R$)</label>
+              <input type="number" id="rbt12" value="144000" min="0" step="1000">
+              <div class="hint">Se não souber, deixamos calculado como 12 × o faturamento mensal — ajuste se for diferente.</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Folha de pagamento mensal (R$) <span style="font-weight:400;color:var(--ink-soft);">— opcional</span></label>
+            <input type="number" id="folha" value="0" min="0" step="100">
+            <div class="hint">Fator R = folha ÷ receita. Se ≥ 28%, a atividade normalmente cai no Anexo III (mais barato); abaixo disso, no Anexo V — mas só vale para atividades da lista do §5º-I do art. 18 da LC 123/2006. Confirme com seu contador antes de trocar o Anexo acima.</div>
+            <div class="note-box" id="fatorRBox" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="btnrow">
+            <button class="btn-ghost" onclick="Wizard.prev()">← Voltar</button>
+            <button class="btn-primary" onclick="Wizard.next()">Continuar →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-panel" data-panel="2">
+        <div class="card">
+          <h2>Suas compras</h2>
+          <p class="lede">No regime híbrido, o CBS/IBS que o seu fornecedor pagou na nota vira crédito — abate o imposto sobre as suas vendas. No Simples puro esse crédito não existe.</p>
+
+          <div class="row2">
+            <div class="field">
+              <label>Quanto do faturamento vai para compras/insumos?</label>
+              <div class="inputpct"><input type="number" id="pctCompras" value="0" min="0" max="100" step="1"><span class="suffix">%</span></div>
+              <div class="hint">Ex.: fatura R$100 e gasta R$40 comprando → 40. É sobre esse valor que o crédito é calculado.</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Alguma dessas compras tem alíquota reduzida?</label>
+            <div id="comprasCategorias"></div>
+          </div>
+
+          <div class="note-box">Se não souber, deixe zerado — o cálculo assume que 100% das compras têm tributação integral (gera mais crédito).</div>
+
+          <div class="btnrow">
+            <button class="btn-ghost" onclick="Wizard.prev()">← Voltar</button>
+            <button class="btn-primary" onclick="Wizard.next()">Continuar →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-panel" data-panel="3">
+        <div class="card">
+          <h2>Suas vendas</h2>
+          <p class="lede">O CBS/IBS incide sobre o que você vende — mas a alíquota varia conforme o tipo de serviço.</p>
+
+          <div class="field">
+            <label>Quanto das suas vendas é para outras empresas (CNPJ)?</label>
+            <div class="inputpct"><input type="number" id="pctB2B" value="100" min="0" max="100" step="1"><span class="suffix">%</span></div>
+            <div class="hint">Informativo: no híbrido, o imposto destacado na nota pode virar crédito do seu cliente — não muda o que você paga.</div>
+          </div>
+
+          <div class="field">
+            <label>Parte do seu serviço tem alíquota reduzida ou é exportação?</label>
+            <div id="vendasCategorias"></div>
+          </div>
+
+          <div class="note-box">Sem preencher, 100% da receita usa a alíquota padrão de referência.</div>
+
+          <div class="btnrow">
+            <button class="btn-ghost" onclick="Wizard.prev()">← Voltar</button>
+            <button class="btn-primary" onclick="Wizard.calcular()">Calcular meu resultado →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 : RESULTADO -->
+      <div class="step-panel" data-panel="4">
+        <div class="card" id="resultadoCard"></div>
+      </div>
+
+    </div>
+
+    <!-- RESUMO LATERAL -->
+    <aside class="summary">
+      <h3>RESUMO EM TEMPO REAL</h3>
+      <div class="item"><span>Regime</span><span id="rsRegime">Simples · ME</span></div>
+      <div class="item"><span>Anexo</span><span id="rsAnexo">Anexo III</span></div>
+      <div class="item"><span>Ano</span><span id="rsAno">2027</span></div>
+      <div class="item"><span>Faturamento mensal</span><span id="rsFat">R$ 12.000,00</span></div>
+      <div class="item"><span>RBT12</span><span id="rsRbt">R$ 144.000,00</span></div>
+      <div class="item"><span>Compras</span><span id="rsCompras">0%</span></div>
+      <div class="item"><span>Vendas B2B</span><span id="rsB2B">100%</span></div>
+      <div class="cta" id="rsCta">Preencha e clique em calcular para ver o resultado.</div>
+    </aside>
+  </div>
+
+  <footer>
+    Estimativa educativa para orientação inicial da Lucralize Contabilidade. Não substitui a apuração oficial nem a análise
+    do seu contador para o caso concreto. Base legal e premissas detalhadas na tela de resultado.
+  </footer>
+</main>
+
+<script>
+/* =========================================================
+   DADOS  — parâmetros legais e premissas do simulador
+   ========================================================= */
+const DATA = {
+  anexos: {
+  III: {
+    nome: "Anexo III — Serviços em geral",
+    nominal: {
+      2027: [ {teto:180000,aliq:0.06,ded:0}, {teto:360000,aliq:0.112,ded:9360}, {teto:720000,aliq:0.135,ded:17640}, {teto:1800000,aliq:0.16,ded:35640}, {teto:3600000,aliq:0.21,ded:125640}, {teto:4800000,aliq:0.329,ded:648000} ],
+      2028: [ {teto:180000,aliq:0.06,ded:0}, {teto:360000,aliq:0.112,ded:9360}, {teto:720000,aliq:0.135,ded:17640}, {teto:1800000,aliq:0.16,ded:35640}, {teto:3600000,aliq:0.21,ded:125640}, {teto:4800000,aliq:0.329,ded:648000} ],
+      2029: [ {teto:180000,aliq:0.06,ded:0}, {teto:360000,aliq:0.112,ded:9360}, {teto:720000,aliq:0.135,ded:17640}, {teto:1800000,aliq:0.16,ded:35640}, {teto:3600000,aliq:0.21,ded:125640}, {teto:4800000,aliq:0.33,ded:648000} ],
+      2030: [ {teto:180000,aliq:0.06,ded:0}, {teto:360000,aliq:0.112,ded:9360}, {teto:720000,aliq:0.135,ded:17640}, {teto:1800000,aliq:0.16,ded:35640}, {teto:3600000,aliq:0.21,ded:125640}, {teto:4800000,aliq:0.33,ded:648000} ],
+      2031: [ {teto:180000,aliq:0.06,ded:0}, {teto:360000,aliq:0.112,ded:9360}, {teto:720000,aliq:0.135,ded:17640}, {teto:1800000,aliq:0.16,ded:35640}, {teto:3600000,aliq:0.21,ded:125640}, {teto:4800000,aliq:0.33,ded:648000} ],
+      2032: [ {teto:180000,aliq:0.06,ded:0}, {teto:360000,aliq:0.112,ded:9360}, {teto:720000,aliq:0.135,ded:17640}, {teto:1800000,aliq:0.16,ded:35640}, {teto:3600000,aliq:0.21,ded:125640}, {teto:4800000,aliq:0.33,ded:648000} ],
+      2033: [ {teto:180000,aliq:0.06,ded:0}, {teto:360000,aliq:0.112,ded:9360}, {teto:720000,aliq:0.135,ded:17640}, {teto:1800000,aliq:0.16,ded:35640}, {teto:3600000,aliq:0.21,ded:125640}, {teto:4800000,aliq:0.33,ded:648000} ],
+    },
+    partilha: {
+      2027: { pendente:false, fonte:"LC 214/2025, Anexo III (redação LC 227/2026) — tabela 2027-2028, todas as faixas", faixas:[ {IRPJ:0.04,CSLL:0.035,CBS:0.1543,CPP:0.434,ISS:0.335,IBS:0.0017}, {IRPJ:0.04,CSLL:0.035,CBS:0.1691,CPP:0.434,ISS:0.32,IBS:0.0019}, {IRPJ:0.04,CSLL:0.035,CBS:0.1641,CPP:0.434,ISS:0.325,IBS:0.0019}, {IRPJ:0.04,CSLL:0.035,CBS:0.1641,CPP:0.434,ISS:0.325,IBS:0.0019}, {IRPJ:0.04,CSLL:0.035,CBS:0.1543,CPP:0.434,ISS:0.335,IBS:0.0017}, {IRPJ:0.3509,CSLL:0.1504,CBS:0.1929,CPP:0.3058,ISS:0.0,IBS:0.0} ] },
+      2028: { pendente:false, fonte:"LC 214/2025, Anexo III (redação LC 227/2026) — tabela 2027-2028, todas as faixas", faixas:[ {IRPJ:0.04,CSLL:0.035,CBS:0.1543,CPP:0.434,ISS:0.335,IBS:0.0017}, {IRPJ:0.04,CSLL:0.035,CBS:0.1691,CPP:0.434,ISS:0.32,IBS:0.0019}, {IRPJ:0.04,CSLL:0.035,CBS:0.1641,CPP:0.434,ISS:0.325,IBS:0.0019}, {IRPJ:0.04,CSLL:0.035,CBS:0.1641,CPP:0.434,ISS:0.325,IBS:0.0019}, {IRPJ:0.04,CSLL:0.035,CBS:0.1543,CPP:0.434,ISS:0.335,IBS:0.0017}, {IRPJ:0.3509,CSLL:0.1504,CBS:0.1929,CPP:0.3058,ISS:0.0,IBS:0.0} ] },
+      2029: { pendente:false, fonte:"LC 214/2025, Anexo III — tabela 2029, todas as faixas", faixas:[ {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.3015,IBS:0.0335}, {IRPJ:0.04,CSLL:0.035,CBS:0.171,CPP:0.434,ISS:0.288,IBS:0.032}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.2925,IBS:0.0325}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.2925,IBS:0.0325}, {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.3015,IBS:0.0335}, {IRPJ:0.35,CSLL:0.15,CBS:0.195,CPP:0.305,ISS:0.0,IBS:0.0} ] },
+      2030: { pendente:true, fonte:"Estimado (CBS mantido em 2029, ISS -20% s/ base 2027-28, IBS = residuo) - NAO localizado literalmente na lei para faixas 2-6", faixas:[ {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.268,IBS:0.067}, {IRPJ:0.04,CSLL:0.035,CBS:0.171,CPP:0.434,ISS:0.256,IBS:0.064}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.26,IBS:0.065}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.26,IBS:0.065}, {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.268,IBS:0.067}, {IRPJ:0.35,CSLL:0.15,CBS:0.195,CPP:0.305,ISS:0.0,IBS:0.0} ] },
+      2031: { pendente:true, fonte:"Estimado (CBS mantido em 2029, ISS -30% s/ base 2027-28, IBS = residuo) - NAO localizado literalmente na lei para faixas 2-6", faixas:[ {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.2345,IBS:0.1005}, {IRPJ:0.04,CSLL:0.035,CBS:0.171,CPP:0.434,ISS:0.224,IBS:0.096}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.2275,IBS:0.0975}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.2275,IBS:0.0975}, {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.2345,IBS:0.1005}, {IRPJ:0.35,CSLL:0.15,CBS:0.195,CPP:0.305,ISS:0.0,IBS:0.0} ] },
+      2032: { pendente:true, fonte:"Estimado (CBS mantido em 2029, ISS -40% s/ base 2027-28, IBS = residuo) - NAO localizado literalmente na lei para faixas 2-6", faixas:[ {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.201,IBS:0.134}, {IRPJ:0.04,CSLL:0.035,CBS:0.171,CPP:0.434,ISS:0.192,IBS:0.128}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.195,IBS:0.13}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.195,IBS:0.13}, {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.201,IBS:0.134}, {IRPJ:0.35,CSLL:0.15,CBS:0.195,CPP:0.305,ISS:0.0,IBS:0.0} ] },
+      2033: { pendente:false, fonte:"LC 214/2025, Anexo III — tabela 2033 (ISS extinto), todas as faixas", faixas:[ {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.0,IBS:0.335}, {IRPJ:0.04,CSLL:0.035,CBS:0.171,CPP:0.434,ISS:0.0,IBS:0.32}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.0,IBS:0.325}, {IRPJ:0.04,CSLL:0.035,CBS:0.166,CPP:0.434,ISS:0.0,IBS:0.325}, {IRPJ:0.04,CSLL:0.035,CBS:0.156,CPP:0.434,ISS:0.0,IBS:0.335}, {IRPJ:0.35,CSLL:0.15,CBS:0.195,CPP:0.305,ISS:0.0,IBS:0.0} ] },
+    },
+    notaFaixa5: "Acima de determinado nivel de aliquota efetiva na 5a Faixa, a lei preve uma regra especial de teto do ISS em 5% (nao implementada nesta versao - usamos o percentual fixo da faixa).",
+  },
+  V: {
+    nome: "Anexo V — Serviços profissionais (§5º-I, Fator R)",
+    nominal: {
+      2027: [ {teto:180000,aliq:0.155,ded:0}, {teto:360000,aliq:0.18,ded:4500}, {teto:720000,aliq:0.195,ded:9900}, {teto:1800000,aliq:0.205,ded:17100}, {teto:3600000,aliq:0.23,ded:62100}, {teto:4800000,aliq:0.304,ded:540000} ],
+      2028: [ {teto:180000,aliq:0.155,ded:0}, {teto:360000,aliq:0.18,ded:4500}, {teto:720000,aliq:0.195,ded:9900}, {teto:1800000,aliq:0.205,ded:17100}, {teto:3600000,aliq:0.23,ded:62100}, {teto:4800000,aliq:0.304,ded:540000} ],
+      2029: [ {teto:180000,aliq:0.155,ded:0}, {teto:360000,aliq:0.18,ded:4500}, {teto:720000,aliq:0.195,ded:9900}, {teto:1800000,aliq:0.205,ded:17100}, {teto:3600000,aliq:0.23,ded:62100}, {teto:4800000,aliq:0.305,ded:540000} ],
+      2030: [ {teto:180000,aliq:0.155,ded:0}, {teto:360000,aliq:0.18,ded:4500}, {teto:720000,aliq:0.195,ded:9900}, {teto:1800000,aliq:0.205,ded:17100}, {teto:3600000,aliq:0.23,ded:62100}, {teto:4800000,aliq:0.305,ded:540000} ],
+      2031: [ {teto:180000,aliq:0.155,ded:0}, {teto:360000,aliq:0.18,ded:4500}, {teto:720000,aliq:0.195,ded:9900}, {teto:1800000,aliq:0.205,ded:17100}, {teto:3600000,aliq:0.23,ded:62100}, {teto:4800000,aliq:0.305,ded:540000} ],
+      2032: [ {teto:180000,aliq:0.155,ded:0}, {teto:360000,aliq:0.18,ded:4500}, {teto:720000,aliq:0.195,ded:9900}, {teto:1800000,aliq:0.205,ded:17100}, {teto:3600000,aliq:0.23,ded:62100}, {teto:4800000,aliq:0.305,ded:540000} ],
+      2033: [ {teto:180000,aliq:0.155,ded:0}, {teto:360000,aliq:0.18,ded:4500}, {teto:720000,aliq:0.195,ded:9900}, {teto:1800000,aliq:0.205,ded:17100}, {teto:3600000,aliq:0.23,ded:62100}, {teto:4800000,aliq:0.305,ded:540000} ],
+    },
+    partilha: {
+      2027: { pendente:false, fonte:"LC 214/2025, Anexo V — tabela 2027-2028, todas as faixas", faixas:[ {IRPJ:0.25,CSLL:0.15,CBS:0.1696,CPP:0.2885,ISS:0.14,IBS:0.0019}, {IRPJ:0.23,CSLL:0.15,CBS:0.1696,CPP:0.2785,ISS:0.17,IBS:0.0019}, {IRPJ:0.24,CSLL:0.15,CBS:0.1795,CPP:0.2385,ISS:0.19,IBS:0.002}, {IRPJ:0.21,CSLL:0.15,CBS:0.1894,CPP:0.2385,ISS:0.21,IBS:0.0021}, {IRPJ:0.23,CSLL:0.125,CBS:0.1696,CPP:0.2385,ISS:0.235,IBS:0.0019}, {IRPJ:0.351,CSLL:0.1554,CBS:0.1978,CPP:0.2958,ISS:0.0,IBS:0.0} ] },
+      2028: { pendente:false, fonte:"LC 214/2025, Anexo V — tabela 2027-2028, todas as faixas", faixas:[ {IRPJ:0.25,CSLL:0.15,CBS:0.1696,CPP:0.2885,ISS:0.14,IBS:0.0019}, {IRPJ:0.23,CSLL:0.15,CBS:0.1696,CPP:0.2785,ISS:0.17,IBS:0.0019}, {IRPJ:0.24,CSLL:0.15,CBS:0.1795,CPP:0.2385,ISS:0.19,IBS:0.002}, {IRPJ:0.21,CSLL:0.15,CBS:0.1894,CPP:0.2385,ISS:0.21,IBS:0.0021}, {IRPJ:0.23,CSLL:0.125,CBS:0.1696,CPP:0.2385,ISS:0.235,IBS:0.0019}, {IRPJ:0.351,CSLL:0.1554,CBS:0.1978,CPP:0.2958,ISS:0.0,IBS:0.0} ] },
+      2029: { pendente:false, fonte:"LC 214/2025, Anexo V — tabela 2029, todas as faixas", faixas:[ {IRPJ:0.25,CSLL:0.15,CBS:0.1715,CPP:0.2885,ISS:0.126,IBS:0.014}, {IRPJ:0.23,CSLL:0.15,CBS:0.1715,CPP:0.2785,ISS:0.153,IBS:0.017}, {IRPJ:0.24,CSLL:0.15,CBS:0.1815,CPP:0.2385,ISS:0.171,IBS:0.019}, {IRPJ:0.21,CSLL:0.15,CBS:0.1915,CPP:0.2385,ISS:0.189,IBS:0.021}, {IRPJ:0.23,CSLL:0.125,CBS:0.1715,CPP:0.2385,ISS:0.2115,IBS:0.0235}, {IRPJ:0.35,CSLL:0.155,CBS:0.2,CPP:0.295,ISS:0.0,IBS:0.0} ] },
+      2030: { pendente:false, fonte:"LC 214/2025, Anexo V — tabela 2030, todas as faixas", faixas:[ {IRPJ:0.25,CSLL:0.15,CBS:0.1715,CPP:0.2885,ISS:0.112,IBS:0.028}, {IRPJ:0.23,CSLL:0.15,CBS:0.1715,CPP:0.2785,ISS:0.136,IBS:0.034}, {IRPJ:0.24,CSLL:0.15,CBS:0.1815,CPP:0.2385,ISS:0.152,IBS:0.038}, {IRPJ:0.21,CSLL:0.15,CBS:0.1915,CPP:0.2385,ISS:0.168,IBS:0.042}, {IRPJ:0.23,CSLL:0.125,CBS:0.1715,CPP:0.2385,ISS:0.188,IBS:0.047}, {IRPJ:0.35,CSLL:0.155,CBS:0.2,CPP:0.295,ISS:0.0,IBS:0.0} ] },
+      2031: { pendente:false, fonte:"LC 214/2025, Anexo V — tabela 2031, todas as faixas", faixas:[ {IRPJ:0.25,CSLL:0.15,CBS:0.1715,CPP:0.2885,ISS:0.098,IBS:0.042}, {IRPJ:0.23,CSLL:0.15,CBS:0.1715,CPP:0.2785,ISS:0.119,IBS:0.051}, {IRPJ:0.24,CSLL:0.15,CBS:0.1815,CPP:0.2385,ISS:0.133,IBS:0.057}, {IRPJ:0.21,CSLL:0.15,CBS:0.1915,CPP:0.2385,ISS:0.147,IBS:0.063}, {IRPJ:0.23,CSLL:0.125,CBS:0.1715,CPP:0.2385,ISS:0.1645,IBS:0.0705}, {IRPJ:0.35,CSLL:0.155,CBS:0.2,CPP:0.295,ISS:0.0,IBS:0.0} ] },
+      2032: { pendente:false, fonte:"LC 214/2025, Anexo V — tabela 2032, todas as faixas", faixas:[ {IRPJ:0.25,CSLL:0.15,CBS:0.1715,CPP:0.2885,ISS:0.084,IBS:0.056}, {IRPJ:0.23,CSLL:0.15,CBS:0.1715,CPP:0.2785,ISS:0.102,IBS:0.068}, {IRPJ:0.24,CSLL:0.15,CBS:0.1815,CPP:0.2385,ISS:0.114,IBS:0.076}, {IRPJ:0.21,CSLL:0.15,CBS:0.1915,CPP:0.2385,ISS:0.126,IBS:0.084}, {IRPJ:0.23,CSLL:0.125,CBS:0.1715,CPP:0.2385,ISS:0.141,IBS:0.094}, {IRPJ:0.35,CSLL:0.155,CBS:0.2,CPP:0.295,ISS:0.0,IBS:0.0} ] },
+      2033: { pendente:false, fonte:"LC 214/2025, Anexo V — tabela 2033, todas as faixas", faixas:[ {IRPJ:0.25,CSLL:0.15,CBS:0.1715,CPP:0.2885,ISS:0.0,IBS:0.14}, {IRPJ:0.23,CSLL:0.15,CBS:0.1715,CPP:0.2785,ISS:0.0,IBS:0.17}, {IRPJ:0.24,CSLL:0.15,CBS:0.1815,CPP:0.2385,ISS:0.0,IBS:0.19}, {IRPJ:0.21,CSLL:0.15,CBS:0.1915,CPP:0.2385,ISS:0.0,IBS:0.21}, {IRPJ:0.23,CSLL:0.125,CBS:0.1715,CPP:0.2385,ISS:0.0,IBS:0.235}, {IRPJ:0.35,CSLL:0.155,CBS:0.2,CPP:0.295,ISS:0.0,IBS:0.0} ] },
+    },
+    notaFaixa5: "Acima de determinado nivel de aliquota efetiva na 5a Faixa, a lei preve uma regra especial de teto do ISS (nao implementada nesta versao - usamos o percentual fixo da faixa).",
+  },
+  },
+  // Alíquota de referência CBS/IBS do regime regular (híbrido).
+  // Ainda pendente de fixação oficial pelo Senado Federal até 31/10 do ano anterior à vigência (LC 214/2025).
+  aliquotaReferencia: {
+    2026: { cbs:0.009, ibsUF:0.001, ibsMun:0.000, pendenteOficial:false, nota:"Alíquota-teste do art. 346/343 — já em vigor." },
+    2027: { cbs:0.087, ibsUF:0.0005, ibsMun:0.0005, pendenteOficial:true, nota:"Estimativa de calibração (base: referência plena 8,8% CBS − 0,1p.p., art.347). Fixação oficial do Senado até 31/10/2026." },
+    2028: { cbs:0.087, ibsUF:0.0005, ibsMun:0.0005, pendenteOficial:true, nota:"Mesma estimativa de 2027 — a confirmar." },
+    2029: { cbs:0.088, ibsUF:0.0177/2, ibsMun:0.0177/2, pendenteOficial:true, nota:"Estimativa de calibração — a confirmar." },
+    2030: { cbs:0.088, ibsUF:0.0177/2, ibsMun:0.0177/2, pendenteOficial:true, nota:"Estimativa de calibração — a confirmar." },
+    2031: { cbs:0.088, ibsUF:0.0177/2, ibsMun:0.0177/2, pendenteOficial:true, nota:"Estimativa de calibração — a confirmar." },
+    2032: { cbs:0.088, ibsUF:0.0177/2, ibsMun:0.0177/2, pendenteOficial:true, nota:"Estimativa de calibração — a confirmar." },
+    2033: { cbs:0.088, ibsUF:0.0177/2, ibsMun:0.0177/2, pendenteOficial:true, nota:"Alíquota de referência plena (regime pleno), ainda em calibração." },
+  },
+  // Categorias de redução — mesmas usadas em compras e vendas.
+  categorias: [
+    { id:"cesta",   label:"Alimentos da cesta básica nacional", reducao:1.00, tipo:"reducao", fonte:"LC 214/2025, Anexo XV — alíquota zero" },
+    { id:"alimHum", label:"Alimentos para consumo humano em geral", reducao:0.60, tipo:"reducao", fonte:"LC 214/2025 — redução de 60%" },
+    { id:"medZero", label:"Medicamentos (alíquota zero)", reducao:1.00, tipo:"reducao", fonte:"LC 214/2025 — lista oficial de alíquota zero" },
+    { id:"med60",   label:"Medicamentos / dispositivos médicos (redução 60%)", reducao:0.60, tipo:"reducao", fonte:"LC 214/2025 — redução de 60%" },
+    { id:"saudeEdu",label:"Serviços de saúde e educação", reducao:0.60, tipo:"reducao", fonte:"LC 214/2025 — redução de 60%" },
+    { id:"prof30",  label:"Serviços profissionais regulamentados (contabilidade, advocacia, engenharia etc.)", reducao:0.30, tipo:"reducao", fonte:"LC 214/2025, art. 127 — redução de 30% (só se o prestador PJ atender aos requisitos do §1º, II)" },
+    { id:"export",  label:"Exportação de serviços", reducao:1.00, tipo:"isencao", fonte:"LC 214/2025, art. 79 c/c art. 51, §2º, I — imune, mas mantém o crédito das compras (exceção expressa à regra geral de estorno do art. 51)", vendasOnly:true },
+    { id:"integral",label:"Nenhuma redução — tributação integral", reducao:0.00, tipo:"integral", fonte:"Alíquota padrão", isDefault:true },
+  ]
+};
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+const State = { step:0, comprasCat:{}, vendasCat:{}, rbt12Manual:false };
+
+/* =========================================================
+   CONFIG — envio das respostas do simulador (sem captura de lead)
+   ========================================================= */
+const CONFIG = {
+  endpointSimulacao: '', // preencher com a URL do gatilho HTTP do Power Automate
+};
+
+/* =========================================================
+   REGISTRO DAS SIMULAÇÕES — fila resiliente (localStorage + sendBeacon)
+   ========================================================= */
+const FILA_CHAVE = 'simHibridoFila';
+
+function uidSimulacao(){
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
+function lerFilaSimulacao(){
+  try { return JSON.parse(localStorage.getItem(FILA_CHAVE) || '[]'); }
+  catch(e){ return []; }
+}
+function gravarFilaSimulacao(fila){
+  try { localStorage.setItem(FILA_CHAVE, JSON.stringify(fila)); } catch(e){}
+}
+function resumoCategoria(catState){
+  // Só guarda as categorias efetivamente marcadas, com o percentual informado.
+  const marcadas = [];
+  for (const id in catState){
+    if (id.startsWith('__')) continue;
+    const v = catState[id];
+    if (v && v.checked && v.pct > 0) marcadas.push(id + ':' + v.pct);
+  }
+  return marcadas.join(', ');
+}
+function enviarSimulacao(dados, viaBeacon){
+  const payload = JSON.stringify(dados);
+  if (!CONFIG.endpointSimulacao) return Promise.resolve(false);
+  if (viaBeacon && navigator.sendBeacon){
+    try { return Promise.resolve(navigator.sendBeacon(CONFIG.endpointSimulacao, new Blob([payload], {type:'application/json'}))); }
+    catch(e){ return Promise.resolve(false); }
+  }
+  return fetch(CONFIG.endpointSimulacao, { method:'POST', headers:{'Content-Type':'application/json'}, body: payload })
+    .then(r => r.ok)
+    .catch(() => false);
+}
+function tentarReenviarFilaSimulacao(){
+  const fila = lerFilaSimulacao();
+  if (!fila.length) return;
+  const restante = [];
+  let i = 0;
+  function proximo(){
+    if (i >= fila.length){ gravarFilaSimulacao(restante); return; }
+    const item = fila[i++];
+    enviarSimulacao(item).then(ok => { if (!ok) restante.push(item); proximo(); });
+  }
+  proximo();
+}
+function registrarSimulacao(dados){
+  const registro = Object.assign({
+    _id: uidSimulacao(),
+    enviadoEm: new Date().toISOString(),
+    origem: 'simulador-hibrido',
+    pagina: location.href,
+  }, dados);
+  const fila = lerFilaSimulacao();
+  fila.push(registro);
+  gravarFilaSimulacao(fila);
+  enviarSimulacao(registro).then(ok => {
+    if (ok){
+      const restante = lerFilaSimulacao().filter(x => x._id !== registro._id);
+      gravarFilaSimulacao(restante);
+    }
+  });
+}
+window.addEventListener('online', tentarReenviarFilaSimulacao);
+window.addEventListener('load', tentarReenviarFilaSimulacao);
+window.addEventListener('pagehide', () => {
+  lerFilaSimulacao().forEach(item => enviarSimulacao(item, true));
+});
+
+/* =========================================================
+   MOTOR DE CÁLCULO
+   ========================================================= */
+const Calc = {
+  // Encontra a faixa (0-indexed) e a alíquota efetiva, dado o RBT12 e a tabela nominal do anexo/ano.
+  faixaEAliquota(anexoKey, ano, rbt12){
+    const tabela = DATA.anexos[anexoKey].nominal[ano];
+    if (rbt12 > tabela[tabela.length-1].teto){
+      return null; // acima do sublimite do Simples (R$4,8 mi) — fora do Simples Nacional
+    }
+    for (let i=0; i<tabela.length; i++){
+      if (rbt12 <= tabela[i].teto){
+        const f = tabela[i];
+        const aliqEf = (rbt12*f.aliq - f.ded)/rbt12;
+        return { faixaIndex:i, aliqEf, faixaNum:i+1 };
+      }
+    }
+    return null;
+  },
+
+  // % efetivo de redução médio de um conjunto de categorias marcadas (compras ou vendas)
+  reducaoMedia(catState){
+    let pctMarcado = 0, reducaoPonderada = 0;
+    for (const c of DATA.categorias){
+      if (c.vendasOnly && catState.__vendas !== true) continue;
+      const v = catState[c.id];
+      if (v && v.checked && v.pct > 0){
+        pctMarcado += v.pct;
+        reducaoPonderada += v.pct * c.reducao;
+      }
+    }
+    pctMarcado = Math.min(pctMarcado, 100);
+    const pctIntegral = Math.max(0, 100 - pctMarcado);
+    // fração do valor total que efetivamente sofre a alíquota cheia (0% de redução)
+    const fatorTributacao = (pctIntegral*1 + (pctMarcado>0 ? (pctMarcado - reducaoPonderada) : 0))/100;
+    return Math.max(0, Math.min(1, fatorTributacao));
+  },
+
+  simular(input){
+    const ano = input.ano;
+    const anexoKey = input.anexo || 'III';
+    const fx = Calc.faixaEAliquota(anexoKey, ano, input.rbt12);
+    if (fx === null){
+      return { foraEscopo:true, rbt12: input.rbt12 };
+    }
+    const partilhaAno = DATA.anexos[anexoKey].partilha[ano];
+    const partilha = { ...partilhaAno.faixas[fx.faixaIndex], fonte: partilhaAno.fonte, pendente: partilhaAno.pendente };
+    const refer = DATA.aliquotaReferencia[ano] || DATA.aliquotaReferencia[2027];
+    const aliqEf = fx.aliqEf;
+
+    const receita = input.faturamentoMensal;
+    const dasIntegral = receita * aliqEf;
+
+    // ---------- Exportação: LC 123/2006, art. 18, §14 e §14-A (redação LC 214/2025) ----------
+    // Na parcela de receita de exportação, o DAS é reduzido das alíquotas efetivas de ICMS, ISS, IPI, IBS e CBS —
+    // só sobra IRPJ + CSLL + CPP. Isso vale tanto no Simples Puro quanto no híbrido (no híbrido, é a própria
+    // definição do que fica no DAS residual).
+    const exportInput = input.vendasCat && input.vendasCat.export;
+    const pctExport = (exportInput && exportInput.checked) ? Math.min(100, Math.max(0, exportInput.pct||0)) : 0;
+    const fracaoFederalDireta = partilha.IRPJ + partilha.CSLL + partilha.CPP; // o que sobra na exportação
+
+    const receitaDom = receita * (1 - pctExport/100);
+    const receitaExport = receita * (pctExport/100);
+    const dasDom = receitaDom * aliqEf;
+    const dasExport = receitaExport * aliqEf * fracaoFederalDireta; // só IRPJ+CSLL+CPP na parcela exportada
+    const dasComExportacao = dasDom + dasExport;
+
+    // ---------- Cenário A: Simples Puro ----------
+    const cbsIbsEmbutido = dasDom * (partilha.CBS + partilha.IBS); // só a parcela doméstica carrega CBS/IBS
+    const cenarioA = {
+      nota: receita,
+      das: dasComExportacao,
+      dasSemExportacao: dasIntegral,
+      cbsIbsEmbutido,
+      creditoTomador: cbsIbsEmbutido,
+      pctCredito: cbsIbsEmbutido/receita,
+      pctExport,
+    };
+
+    // ---------- Cenário B: Híbrido ----------
+    // A opção do art. 41, §3º da LC 214/2025 tira CBS e IBS do DAS na parcela doméstica. Na parcela de
+    // exportação, ISS/ICMS/IPI/IBS/CBS já saem do DAS de qualquer forma (art. 18, §14/§14-A LC123) — então o
+    // resíduo da exportação é igual nos dois cenários (só IRPJ+CSLL+CPP).
+    const parcelaQueSai = dasDom * (partilha.CBS + partilha.IBS); // só a parcela doméstica tem CBS/IBS pra sair
+    const dasResidual = dasDom * (partilha.IRPJ + partilha.CSLL + partilha.CPP + partilha.ISS) + dasExport;
+
+    const fatorVendas = Calc.reducaoMedia({...input.vendasCat, __vendas:true});
+    const cbsBruto = receita * fatorVendas * refer.cbs;
+    const ibsBruto = receita * fatorVendas * (refer.ibsUF + refer.ibsMun);
+
+    const valorCompras = receita * (input.pctCompras/100);
+    const fatorCompras = Calc.reducaoMedia({...input.comprasCat, __vendas:false});
+    const creditoCbs = valorCompras * fatorCompras * refer.cbs;
+    const creditoIbs = valorCompras * fatorCompras * (refer.ibsUF + refer.ibsMun);
+
+    // Sem clamp em zero: se o crédito das compras superar o débito (comum em exportação, que mantém o crédito
+    // mas isenta a saída — "zero-rating"), o saldo negativo vira ressarcimento a favor do contribuinte.
+    const cbsLiquido = cbsBruto - creditoCbs;
+    const ibsLiquido = ibsBruto - creditoIbs;
+    const totalPorFora = cbsLiquido + ibsLiquido;
+
+    const cenarioB = {
+      dasIntegral, parcelaQueSai, dasResidual,
+      cbsBruto, ibsBruto, creditoCbs, creditoIbs,
+      cbsLiquido, ibsLiquido, totalPorFora,
+      totalAno: (dasResidual + totalPorFora) * 12,
+      totalAnoTradicional: dasComExportacao * 12,
+    };
+    cenarioB.diferencaAno = cenarioB.totalAno - cenarioB.totalAnoTradicional;
+    cenarioB.diferencaMes = cenarioB.diferencaAno/12;
+    cenarioB.aliquotaEfetivaHibrido = (dasResidual + totalPorFora)/receita;
+
+    const exportState = input.vendasCat && input.vendasCat.export;
+    const temExportacaoRelevante = !!(exportState && exportState.checked && exportState.pct > 0);
+
+    return {
+      foraEscopo:false, ano, anexoKey, aliqEf, receita, rbt12:input.rbt12, faixaNum:fx.faixaNum,
+      cenarioA, cenarioB, refer, partilha, temExportacaoRelevante,
+    };
+  }
+};
+
+/* =========================================================
+   UI — WIZARD
+   ========================================================= */
+function fmtR(v){ return v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); }
+function fmtPct(v, casas=2){ return (v*100).toLocaleString('pt-BR', {minimumFractionDigits:casas, maximumFractionDigits:casas}) + '%'; }
+
+function buildCategoryList(containerId, isVendas){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  DATA.categorias.forEach(c=>{
+    if (c.vendasOnly && !isVendas) return;
+    const row = document.createElement('div');
+    row.className = 'checkrow';
+    row.innerHTML = `
+      <input type="checkbox" id="${containerId}_${c.id}" ${c.isDefault?'checked disabled':''}>
+      <label for="${containerId}_${c.id}">${c.label} ${c.tipo==='isencao'?'<span class="tag">isenção</span>':(c.reducao>0&&!c.isDefault?`<span class="tag">-${Math.round(c.reducao*100)}%</span>`:'')}</label>
+      <span class="pct"><input type="number" min="0" max="100" value="0" id="${containerId}_${c.id}_pct" ${c.isDefault?'disabled':''}></span>
+      <span style="width:34px;font-size:12px;color:var(--ink-soft);">%</span>
+    `;
+    el.appendChild(row);
+  });
+}
+
+function readCategoryState(containerId){
+  const st = {};
+  DATA.categorias.forEach(c=>{
+    const chk = document.getElementById(containerId+'_'+c.id);
+    const pctEl = document.getElementById(containerId+'_'+c.id+'_pct');
+    if (!chk) return;
+    st[c.id] = { checked: chk.checked, pct: pctEl ? parseFloat(pctEl.value)||0 : 0 };
+  });
+  return st;
+}
+
+const Wizard = {
+  next(){
+    if (State.step < 4){
+      document.querySelector(`.step-panel[data-panel="${State.step}"]`).classList.remove('active');
+      document.querySelector(`.step-pill[data-step="${State.step}"]`).classList.add('done');
+      State.step++;
+      document.querySelector(`.step-panel[data-panel="${State.step}"]`).classList.add('active');
+      document.querySelector(`.step-pill[data-step="${State.step}"]`).classList.add('active');
+      Wizard.syncSummary();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+  },
+  prev(){
+    if (State.step > 0){
+      document.querySelector(`.step-panel[data-panel="${State.step}"]`).classList.remove('active');
+      document.querySelector(`.step-pill[data-step="${State.step}"]`).classList.remove('active');
+      State.step--;
+      document.querySelector(`.step-panel[data-panel="${State.step}"]`).classList.add('active');
+      document.querySelector(`.step-pill[data-step="${State.step}"]`).classList.remove('done');
+      document.querySelector(`.step-pill[data-step="${State.step}"]`).classList.add('active');
+    }
+  },
+  syncSummary(){
+    document.getElementById('rsAnexo').textContent = 'Anexo ' + document.getElementById('anexo').value;
+    document.getElementById('rsAno').textContent = document.getElementById('ano').value;
+    document.getElementById('rsFat').textContent = fmtR(parseFloat(document.getElementById('faturamentoMensal').value)||0);
+    document.getElementById('rsRbt').textContent = fmtR(parseFloat(document.getElementById('rbt12').value)||0);
+    document.getElementById('rsCompras').textContent = (document.getElementById('pctCompras').value||0) + '%';
+    document.getElementById('rsB2B').textContent = (document.getElementById('pctB2B').value||0) + '%';
+    Wizard.syncFatorR();
+  },
+  autoRbt12(){
+    if (State.rbt12Manual) return;
+    const fat = parseFloat(document.getElementById('faturamentoMensal').value)||0;
+    document.getElementById('rbt12').value = (fat*12) || '';
+  },
+  syncFatorR(){
+    const box = document.getElementById('fatorRBox');
+    if (!box) return;
+    const fat = parseFloat(document.getElementById('faturamentoMensal').value)||0;
+    const folha = parseFloat(document.getElementById('folha').value)||0;
+    if (fat <= 0){ box.textContent = ''; return; }
+    const fatorR = folha/fat;
+    const sugestao = fatorR >= 0.28 ? 'III' : 'V';
+    box.innerHTML = `Fator R calculado: <b>${(fatorR*100).toFixed(1)}%</b> → sugere Anexo <b>${sugestao}</b> (se a atividade estiver na lista do §5º-I).`;
+  },
+  calcular(){
+    const input = {
+      ano: parseInt(document.getElementById('ano').value,10),
+      anexo: document.getElementById('anexo').value,
+      faturamentoMensal: parseFloat(document.getElementById('faturamentoMensal').value)||0,
+      rbt12: parseFloat(document.getElementById('rbt12').value)||0,
+      pctCompras: parseFloat(document.getElementById('pctCompras').value)||0,
+      comprasCat: readCategoryState('comprasCategorias'),
+      vendasCat: readCategoryState('vendasCategorias'),
+    };
+    const r = Calc.simular(input);
+    Wizard.next();
+    Renderer.render(r);
+    document.getElementById('rsCta').textContent = 'Resultado calculado — veja a comparação completa.';
+
+    registrarSimulacao({
+      ano: input.ano,
+      anexo: input.anexo,
+      faturamentoMensal: input.faturamentoMensal,
+      rbt12: input.rbt12,
+      pctCompras: input.pctCompras,
+      pctB2B: parseFloat(document.getElementById('pctB2B').value) || 0,
+      folha: parseFloat(document.getElementById('folha').value) || 0,
+      comprasCategorias: resumoCategoria(input.comprasCat),
+      vendasCategorias: resumoCategoria(input.vendasCat),
+      foraEscopo: !!r.foraEscopo,
+      aliqEf: r.foraEscopo ? null : Number(r.aliqEf.toFixed(4)),
+      faixaNum: r.foraEscopo ? null : r.faixaNum,
+      custoPuroMes: r.foraEscopo ? null : Number(r.cenarioA.das.toFixed(2)),
+      custoHibridoRepasseMes: r.foraEscopo ? null : Number((r.cenarioB.dasResidual + Math.min(r.cenarioB.totalPorFora, 0)).toFixed(2)),
+      custoHibridoSemRepasseMes: r.foraEscopo ? null : Number((r.cenarioB.totalAno/12).toFixed(2)),
+      diferencaMes: r.foraEscopo ? null : Number(r.cenarioB.diferencaMes.toFixed(2)),
+      diferencaAno: r.foraEscopo ? null : Number(r.cenarioB.diferencaAno.toFixed(2)),
+      temExportacaoRelevante: r.foraEscopo ? false : !!r.temExportacaoRelevante,
+    });
+  }
+};
+
+const Renderer = {
+  toggleDetails(){
+    const btn = document.getElementById('detailsToggleBtn');
+    const sec = document.getElementById('detailsSection');
+    const isOpen = sec.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.querySelector('.label').textContent = isOpen ? 'Esconder detalhes técnicos' : 'Ver como calculamos (detalhes técnicos e base legal)';
+  },
+
+  render(r){
+    const el = document.getElementById('resultadoCard');
+    if (r.foraEscopo){
+      el.innerHTML = `<h2>Fora do escopo desta versão</h2>
+        <p class="lede">Este simulador cobre o Simples Nacional até o sublimite de R$ 4.800.000,00 de RBT12. Seu RBT12 informado
+        (${fmtR(r.rbt12)}) está acima disso — fale com a Lucralize para uma simulação manual com as demais faixas.</p>
+        <div class="btnrow"><button class="btn-ghost" onclick="Wizard.prev()">← Editar respostas</button></div>`;
+      return;
+    }
+
+    const custoPuroMes = r.cenarioA.das;
+    // "Repassar" só isenta o que é DÉBITO (o que você cobraria do cliente). O crédito das suas compras
+    // é seu de qualquer jeito, quer repasse ou não — por isso some SEMPRE, mesmo no cenário "repasse".
+    // Math.min(totalPorFora,0) garante isso: se totalPorFora for negativo (crédito > débito), o saldo
+    // credor entra igual nos dois cenários; se for positivo (débito líquido), só o "sem repasse" o absorve.
+    const custoHibridoRepasseMes = r.cenarioB.dasResidual + Math.min(r.cenarioB.totalPorFora, 0);
+    const custoHibridoSemRepasseMes = r.cenarioB.totalAno/12;
+    const saldoCredorPuro = r.cenarioB.totalPorFora < 0; // repasse e sem-repasse dão no mesmo aqui
+
+    // qual linha é a "melhor" das 3, para destacar em verde
+    const opcoes = [
+      { key:'puro', mes:custoPuroMes },
+      { key:'repasse', mes:custoHibridoRepasseMes },
+      { key:'semRepasse', mes:custoHibridoSemRepasseMes },
+    ];
+    const melhor = opcoes.reduce((a,b)=> b.mes<a.mes-0.005? b:a).key;
+
+    let headline, headlineDetail;
+    if (saldoCredorPuro && (melhor==='repasse' || melhor==='semRepasse')){
+      headline = 'O híbrido compensa — por causa do crédito das compras, não do repasse';
+      headlineDetail = `O crédito de CBS/IBS das suas compras é maior que o imposto sobre as suas vendas (comum quando a receita é isenta, como exportação). Seu custo real cai para <b>${fmtR(custoHibridoRepasseMes)}/mês</b> — menos que os <b>${fmtR(custoPuroMes)}/mês</b> de hoje — <b>independente de repassar ou não o CBS/IBS ao cliente</b>, porque não há o que repassar.`;
+    } else if (melhor==='puro'){
+      headline = 'Fique no Simples Puro';
+      headlineDetail = `Continuar como está hoje é a opção mais barata: <b>${fmtR(custoPuroMes)}/mês</b>. Migrar para o híbrido custaria mais, mesmo se você conseguir repassar o imposto ao seu cliente.`;
+    } else if (melhor==='repasse'){
+      headline = 'O híbrido pode compensar — mas só se você repassar o imposto';
+      headlineDetail = `Se você cobrar o CBS/IBS separado na nota do seu cliente, seu custo real cai para <b>${fmtR(custoHibridoRepasseMes)}/mês</b> — menos que os <b>${fmtR(custoPuroMes)}/mês</b> de hoje. Sem repassar, fica bem mais caro.`;
+    } else {
+      headline = 'Nenhuma opção do híbrido compensa aqui';
+      headlineDetail = `Mesmo repassando o imposto ao seu cliente, o híbrido ainda sai mais caro que ficar no Simples Puro (${fmtR(custoPuroMes)}/mês).`;
+    }
+
+    el.innerHTML = `
+      <div class="simple-hero">
+        <div class="kicker">RECOMENDAÇÃO PARA ${r.ano} · ${fmtR(r.receita)}/mês de faturamento</div>
+        <h2>${headline}</h2>
+        <p>${headlineDetail}</p>
+      </div>
+
+      <div class="simple-rows">
+        <div class="simple-row ${melhor==='puro'?'best':''}">
+          <div class="tag-icon">${melhor==='puro'?'✅':'⚪'}</div>
+          <div class="body">
+            <div class="title">Continuar no Simples Puro (como hoje)</div>
+            <div class="caption">Nada muda — o imposto continua embutido na sua guia única.</div>
+          </div>
+          <div class="value">${fmtR(custoPuroMes)}<span class="per">por mês · ${fmtPct(custoPuroMes/r.receita)} da receita</span></div>
+        </div>
+
+        <div class="simple-row ${melhor==='repasse'?'best':''}">
+          <div class="tag-icon">${melhor==='repasse'?'✅':'⚪'}</div>
+          <div class="body">
+            <div class="title">Mudar pro híbrido — cobrando o imposto à parte do cliente</div>
+            <div class="caption">${saldoCredorPuro ? 'Aqui não depende do contrato — o crédito das compras já é maior que o débito das vendas.' : 'Só funciona se o contrato disser claramente que o CBS/IBS é cobrado em cima do preço do serviço.'}</div>
+          </div>
+          <div class="value">${fmtR(custoHibridoRepasseMes)}<span class="per">por mês · ${fmtPct(custoHibridoRepasseMes/r.receita)} da receita</span></div>
+        </div>
+
+        <div class="simple-row ${melhor==='semRepasse'?'best': (saldoCredorPuro?'':'worst')}">
+          <div class="tag-icon">${melhor==='semRepasse'?'✅':(saldoCredorPuro?'⚪':'⚠️')}</div>
+          <div class="body">
+            <div class="title">Mudar pro híbrido — sem cobrar à parte</div>
+            <div class="caption">${saldoCredorPuro ? 'Dá no mesmo que repassar, neste caso — o resultado vem do crédito das compras.' : 'Você absorve o imposto no seu próprio preço — sai direto da sua margem.'}</div>
+          </div>
+          <div class="value">${fmtR(custoHibridoSemRepasseMes)}<span class="per">por mês · ${fmtPct(custoHibridoSemRepasseMes/r.receita)} da receita</span></div>
+        </div>
+      </div>
+
+      ${saldoCredorPuro ? `
+      <div class="action-callout">
+        💰 <b>Aqui o ganho vem do crédito das suas compras, não do repasse ao cliente.</b> Não precisa mudar nada no contrato
+        por causa disso — mas vale conferir com a Lucralize se o crédito informado (compras, categoria e percentual) está
+        correto antes de decidir, porque é ele que está carregando o resultado.
+      </div>` : (melhor!=='puro' || Math.abs(custoHibridoRepasseMes-custoPuroMes) < custoPuroMes*0.5 ? `
+      <div class="action-callout">
+        📋 <b>Se for pro híbrido:</b> o ponto mais importante é o contrato — precisa dizer, preto no branco, que o valor do
+        serviço é ${fmtR(r.receita)} e que o CBS/IBS entra separado na nota. Sem essa frase, o cliente pode achar que o preço
+        combinado já inclui tudo, e a diferença vira prejuízo seu.
+      </div>` : '')}
+
+      <button class="details-toggle" id="detailsToggleBtn" onclick="Renderer.toggleDetails()">
+        <span class="arrow">▾</span><span class="label">Ver como calculamos (detalhes técnicos e base legal)</span>
+      </button>
+
+      <div class="details-section" id="detailsSection">
+        ${Renderer.detailsHTML(r)}
+      </div>
+
+      <div class="btnrow" style="margin-top:20px;">
+        <button class="btn-ghost" onclick="Wizard.prev()">← Editar respostas</button>
+        <button class="btn-ghost" onclick="location.reload()">Refazer simulação</button>
+      </div>
+    `;
+  },
+
+  detailsHTML(r){
+    const winnerA = r.cenarioB.diferencaAno >= 0;
+    return `
+      <p class="lede">Comparação para ${r.ano}, com faturamento mensal de ${fmtR(r.receita)} (RBT12 ${fmtR(r.rbt12)}, ${DATA.anexos[r.anexoKey].nome}, ${r.faixaNum}ª Faixa).</p>
+
+      ${r.partilha.pendente ? `<div class="note-box warn"><b>Atenção:</b> a partilha do DAS usada para ${r.ano} é uma <b>estimativa por padrão de transição</b>, não localizada literalmente na lei para o Anexo III — trate como aproximação. ${r.partilha.fonte}</div>` : ''}
+      ${r.refer.pendenteOficial ? `<div class="note-box warn"><b>Atenção:</b> a alíquota padrão do regime regular usada aqui (CBS ${fmtPct(r.refer.cbs)} / IBS ${fmtPct(r.refer.ibsUF+r.refer.ibsMun)}) é uma <b>estimativa de calibração</b>. A fixação oficial cabe ao Senado Federal até 31/10 do ano anterior à vigência (LC 214/2025). ${r.refer.nota}</div>` : ''}
+      ${r.temExportacaoRelevante ? `<div class="note-box"><b>Exportação:</b> a parcela de receita marcada como exportação (${r.cenarioA.pctExport}%) já está sendo calculada, nos dois cenários, sem ICMS/ISS/IPI/IBS/CBS — só IRPJ+CSLL+CPP (LC 123/2006, art. 18, §14 e §14-A). Confira o detalhamento na memória de cálculo abaixo.</div>` : ''}
+      ${r.cenarioB.totalPorFora < 0 ? `<div class="note-box"><b>Saldo credor:</b> no híbrido, o crédito das compras (${fmtR(r.cenarioB.creditoCbs+r.cenarioB.creditoIbs)}/mês) supera o débito de CBS/IBS sobre as vendas — comum quando há exportação, que mantém o crédito mas isenta a saída (LC 214/2025, art. 79 c/c art. 51, §2º, I). O excedente (${fmtR(Math.abs(r.cenarioB.totalPorFora))}/mês) é, em tese, ressarcível (art. 53, §1º) — mas o procedimento, prazo e eventuais restrições de ressarcimento não estão modelados nesta versão. Trate como direito a apurar, não como caixa garantido no mês.</div>` : ''}
+
+      <div class="result-grid">
+        <div class="result-card ${winnerA ? 'winner':''}">
+          ${winnerA ? '<span class="flag">✓ MAIS VANTAJOSO</span>' : ''}
+          <h4>Simples Puro</h4>
+          <div class="sub">IBS/CBS embutidos no DAS</div>
+          <div class="big">${fmtR(r.cenarioA.das*12)}</div>
+          <div class="sub">no ano · ${fmtR(r.cenarioA.das)}/mês · alíquota efetiva ${fmtPct(r.aliqEf)}</div>
+          <div class="breakdown">
+            <div class="ln"><span>CBS + IBS embutidos no DAS</span><span>${fmtR(r.cenarioA.cbsIbsEmbutido)}/mês</span></div>
+            <div class="ln"><span>Crédito que o seu cliente pode tomar</span><span>${fmtR(r.cenarioA.creditoTomador)} (${fmtPct(r.cenarioA.pctCredito)})</span></div>
+            <div class="ln"><span>Total no ano</span><span>${fmtR(r.cenarioA.das*12)}</span></div>
+          </div>
+        </div>
+
+        <div class="result-card ${!winnerA ? 'winner':''}">
+          ${!winnerA ? '<span class="flag">✓ MAIS VANTAJOSO</span>' : ''}
+          <h4>Simples Híbrido</h4>
+          <div class="sub">DAS residual + CBS/IBS por fora, líquidos de crédito</div>
+          <div class="big">${fmtR(r.cenarioB.totalAno)}</div>
+          <div class="sub">no ano · ${fmtR(r.cenarioB.totalAno/12)}/mês · alíquota efetiva ${fmtPct(r.cenarioB.aliquotaEfetivaHibrido)}</div>
+          <div class="breakdown">
+            <div class="ln"><span>DAS residual</span><span>${fmtR(r.cenarioB.dasResidual)}/mês</span></div>
+            <div class="ln"><span>CBS/IBS bruto sobre vendas</span><span>${fmtR(r.cenarioB.cbsBruto+r.cenarioB.ibsBruto)}/mês</span></div>
+            <div class="ln"><span>Crédito das compras</span><span>− ${fmtR(r.cenarioB.creditoCbs+r.cenarioB.creditoIbs)}/mês</span></div>
+            <div class="ln"><span>Total no ano</span><span>${fmtR(r.cenarioB.totalAno)}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict">
+        ${winnerA
+          ? `Optando pelo híbrido, você pagaria <b>${fmtR(Math.abs(r.cenarioB.diferencaAno))} a mais</b> em ${r.ano} (${fmtR(Math.abs(r.cenarioB.diferencaMes))}/mês) — considerando as premissas acima.`
+          : `Optando pelo híbrido, você pagaria <b>${fmtR(Math.abs(r.cenarioB.diferencaAno))} a menos</b> em ${r.ano} (${fmtR(Math.abs(r.cenarioB.diferencaMes))}/mês) — o crédito das suas compras supera o custo de sair do DAS.`}
+      </div>
+
+      <h2 style="margin-top:26px;">Memória de cálculo</h2>
+      <table class="memoria">
+        <tr><th>Item</th><th>Valor</th><th>Base</th></tr>
+        <tr><td>Alíquota efetiva — ${DATA.anexos[r.anexoKey].nome}, ${r.faixaNum}ª Faixa</td><td>${fmtPct(r.aliqEf)}</td><td>LC 214/2025, ${r.anexoKey==='V'?'Anexo V':'Anexo III'} — RBT12 ${fmtR(r.rbt12)}</td></tr>
+        <tr><td>Alíquota efetiva (RBT12 ${fmtR(r.rbt12)})</td><td>${fmtPct(r.aliqEf)}</td><td>Fórmula padrão LC 123/2006, art. 18 §1º</td></tr>
+        <tr><td>DAS integral</td><td>${fmtR(r.cenarioA.das)}/mês</td><td>Receita × alíquota efetiva${r.cenarioA.pctExport>0?` (com ${r.cenarioA.pctExport}% de exportação reduzida — art. 18 §14/§14-A LC123)`:''}</td></tr>
+        <tr><td>% partilha CBS (${r.ano})</td><td>${fmtPct(r.partilha.CBS)}</td><td>${r.partilha.fonte}</td></tr>
+        <tr><td>% partilha IBS (${r.ano})</td><td>${fmtPct(r.partilha.IBS)}</td><td>${r.partilha.fonte}</td></tr>
+        <tr><td>Alíquota padrão CBS (${r.ano})</td><td>${fmtPct(r.refer.cbs)}</td><td>${r.refer.nota}</td></tr>
+        <tr><td>Alíquota padrão IBS (${r.ano})</td><td>${fmtPct(r.refer.ibsUF+r.refer.ibsMun)}</td><td>${r.refer.nota}</td></tr>
+        <tr><td>Total anual — Simples Puro</td><td>${fmtR(r.cenarioA.das*12)}</td><td>DAS × 12</td></tr>
+        <tr><td>Total anual — Híbrido</td><td>${fmtR(r.cenarioB.totalAno)}</td><td>(DAS residual + CBS/IBS líquido) × 12</td></tr>
+      </table>
+
+      <ul class="assumptions" style="margin-top:16px;">
+        <li>Estimativa educativa — não substitui a apuração oficial nem a análise do seu contador com os dados reais.</li>
+        <li>Cobre Anexo III e Anexo V, todas as 6 faixas, até o sublimite de R$ 4.800.000,00 — a determinação de qual anexo se aplica à sua atividade é manual nesta versão.</li>
+        <li>5ª Faixa: acima de um certo nível de alíquota efetiva, a lei prevê uma regra especial de teto do ISS (não implementada — usamos o percentual fixo da faixa, o que pode gerar pequena imprecisão perto do topo da 5ª Faixa).</li>
+        <li>Anexo III, 2030-2032, faixas 2 a 6: partilha estimada (mesma lógica da 1ª Faixa), não confirmada linha a linha na lei.</li>
+        <li>Não inclui Imposto Seletivo nem regimes monofásicos (combustíveis).</li>
+        <li>Prazo de opção: setembro (semestre jan-jun) ou março (semestre jul-dez), irretratável no período — LC 123/2006, art. 18, §§9º-11.</li>
+      </ul>
+    `;
+  }
+};
+
+/* init */
+buildCategoryList('comprasCategorias', false);
+buildCategoryList('vendasCategorias', true);
+// RBT12 automático = 12 × faturamento mensal, enquanto o usuário não editar o campo diretamente.
+// Registrado antes do loop genérico abaixo, para que o RBT12 já esteja atualizado quando o resumo for lido.
+document.getElementById('faturamentoMensal').addEventListener('input', Wizard.autoRbt12);
+document.getElementById('rbt12').addEventListener('input', ()=>{ State.rbt12Manual = true; });
+['faturamentoMensal','rbt12','pctCompras','pctB2B','anexo','ano','folha'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', Wizard.syncSummary);
+  document.getElementById(id).addEventListener('change', Wizard.syncSummary);
+});
+Wizard.autoRbt12();
+Wizard.syncSummary();
+</script>
+</body>
+</html>
