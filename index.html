@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -517,7 +516,7 @@ const State = { step:0, comprasCat:{}, vendasCat:{}, rbt12Manual:false };
    CONFIG — envio das respostas do simulador (sem captura de lead)
    ========================================================= */
 const CONFIG = {
-  endpointSimulacao: '', // preencher com a URL do gatilho HTTP do Power Automate
+  endpointSimulacao: 'https://default5173aa8366e149f39128f2251b4329.4d.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/24/workflows/ebce769ea9aa4ed593e314e4de520792/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aVQX63kWkbNJB0OecL07UOdPqR1nxFjyLRCKgCTMGPk',
 };
 
 /* =========================================================
@@ -819,13 +818,13 @@ const Wizard = {
       comprasCategorias: resumoCategoria(input.comprasCat),
       vendasCategorias: resumoCategoria(input.vendasCat),
       foraEscopo: !!r.foraEscopo,
-      aliqEf: r.foraEscopo ? null : Number(r.aliqEf.toFixed(4)),
-      faixaNum: r.foraEscopo ? null : r.faixaNum,
-      custoPuroMes: r.foraEscopo ? null : Number(r.cenarioA.das.toFixed(2)),
-      custoHibridoRepasseMes: r.foraEscopo ? null : Number((r.cenarioB.dasResidual + Math.min(r.cenarioB.totalPorFora, 0)).toFixed(2)),
-      custoHibridoSemRepasseMes: r.foraEscopo ? null : Number((r.cenarioB.totalAno/12).toFixed(2)),
-      diferencaMes: r.foraEscopo ? null : Number(r.cenarioB.diferencaMes.toFixed(2)),
-      diferencaAno: r.foraEscopo ? null : Number(r.cenarioB.diferencaAno.toFixed(2)),
+      aliqEf: r.foraEscopo ? 0 : Number(r.aliqEf.toFixed(4)),
+      faixaNum: r.foraEscopo ? 0 : r.faixaNum,
+      custoPuroMes: r.foraEscopo ? 0 : Number(r.cenarioA.das.toFixed(2)),
+      custoHibridoRepasseMes: r.foraEscopo ? 0 : Number((r.cenarioB.dasResidual + Math.min(r.cenarioB.totalPorFora, 0)).toFixed(2)),
+      custoHibridoSemRepasseMes: r.foraEscopo ? 0 : Number((r.cenarioB.totalAno/12).toFixed(2)),
+      diferencaMes: r.foraEscopo ? 0 : Number(r.cenarioB.diferencaMes.toFixed(2)),
+      diferencaAno: r.foraEscopo ? 0 : Number(r.cenarioB.diferencaAno.toFixed(2)),
       temExportacaoRelevante: r.foraEscopo ? false : !!r.temExportacaoRelevante,
     });
   }
